@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<iq:manifest version="3" xmlns:iq="http://www.garmin.com/xml/connectiq">
+    <!-- DJI Action 4 拍录联动数据字段: 运动计时开始/结束自动控制相机录像 -->
+    <iq:application id="8f3a5c21-6d47-4e9b-b2a8-1c5f0d9e7a31" type="datafield"
+        name="@Strings.AppName" entry="DJIControlApp" launcherIcon="@Drawables.LauncherIcon"
+        minApiLevel="5.1.0" version="0.1.0">
+        <iq:products>
+            <!-- 2022 年后发布、支持 CIQ BLE central 的机型 (按需增删, 以
+                 Connect IQ Store 中 GoPro 官方 App 的"兼容设备"列表为准;
+                 id 列表已对照 Connect IQ 9.3.0 设备库逐一编译验证) -->
+            <iq:product id="fenix7"/>
+            <iq:product id="fenix7s"/>
+            <iq:product id="fenix7x"/>
+            <iq:product id="fenix7pro"/>
+            <iq:product id="fenix7spro"/>
+            <iq:product id="fenix7xpro"/>
+            <iq:product id="fenix843mm"/>
+            <iq:product id="fenix847mm"/>
+            <iq:product id="fenix8pro47mm"/>
+            <iq:product id="fenix8solar47mm"/>
+            <iq:product id="fenix8solar51mm"/>
+            <iq:product id="epix2"/>
+            <iq:product id="epix2pro42mm"/>
+            <iq:product id="epix2pro47mm"/>
+            <iq:product id="epix2pro51mm"/>
+            <iq:product id="enduro3"/>
+            <iq:product id="fr165"/>
+            <iq:product id="fr165m"/>
+                        <iq:product id="fr255"/>
+            <iq:product id="fr255s"/>
+<iq:product id="fr265"/>
+            <iq:product id="fr265s"/>
+            <iq:product id="fr57042mm"/>
+            <iq:product id="fr57047mm"/>
+            <iq:product id="fr955"/>
+            <iq:product id="fr965"/>
+            <iq:product id="fr970"/>
+            <iq:product id="venu3"/>
+            <iq:product id="venu3s"/>
+            <iq:product id="venu441mm"/>
+            <iq:product id="venu445mm"/>
+            <iq:product id="vivoactive5"/>
+            <iq:product id="instinct3amoled45mm"/>
+            <iq:product id="instinct3amoled50mm"/>
+            <iq:product id="instinct3solar45mm"/>
+            <iq:product id="marq2"/>
+            <iq:product id="marq2aviator"/>
+            <iq:product id="descentmk343mm"/>
+            <iq:product id="descentmk351mm"/>
+        </iq:products>
+        <iq:permissions>
+            <iq:uses-permission id="BluetoothLowEnergy"/>
+        </iq:permissions>
+        <iq:languages>
+            <iq:language>eng</iq:language>
+        </iq:languages>
+        <iq:barrels/>
+    </iq:application>
+</iq:manifest>

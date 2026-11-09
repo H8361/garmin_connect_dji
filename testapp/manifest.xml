@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<iq:manifest version="3" xmlns:iq="http://www.garmin.com/xml/connectiq">
+    <!-- 调试用: 手动控制相机录像的测试 App (验证 BLE 链路与协议, 不依赖运动) -->
+    <iq:application id="a7c2e84f-1b39-4d56-9e0a-3f8b6c2d5e77" type="watch-app"
+        name="@Strings.AppName" entry="TestApp" launcherIcon="@Drawables.LauncherIcon"
+        minApiLevel="5.1.0" version="0.1.0">
+        <iq:products>
+            <iq:product id="fenix7"/>
+            <iq:product id="fenix7pro"/>
+            <iq:product id="fenix847mm"/>
+            <iq:product id="epix2"/>
+            <iq:product id="enduro3"/>
+            <iq:product id="fr255"/>
+            <iq:product id="fr255m"/>
+            <iq:product id="fr255s"/>
+            <iq:product id="fr255sm"/>
+            <iq:product id="fr265"/>
+            <iq:product id="fr57047mm"/>
+            <iq:product id="fr965"/>
+            <iq:product id="venu3"/>
+            <iq:product id="vivoactive5"/>
+            <iq:product id="marq2"/>
+        </iq:products>
+        <iq:permissions>
+            <iq:uses-permission id="BluetoothLowEnergy"/>
+        </iq:permissions>
+        <iq:languages>
+            <iq:language>eng</iq:language>
+        </iq:languages>
+        <iq:barrels/>
+    </iq:application>
+</iq:manifest>

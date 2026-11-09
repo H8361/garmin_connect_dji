@@ -1,0 +1,49 @@
+# ===== 图标中间产物 =====
+icon/launcher*.html
+icon/launcher*.png
+
+# ===== 私钥 — 绝对不能上传 =====
+developer_key.pem
+developer_key.der
+*.pem
+*.der
+*.key
+
+# ===== 本地工具链与大体积产物 (自行安装, 不入库) =====
+sdk/
+sdk810/
+jdk/
+root/
+fakehome/
+refs/
+node_modules/
+
+# ===== 压缩包 / 临时下载 =====
+*.zip
+*.tgz
+*.tar.gz
+
+# ===== 编译产物 (通过 GitHub Releases 分发 PRG) =====
+bin/
+
+# ===== 临时调研文件 =====
+*.log
+CIQ_LOG*
+sideload_thread.html
+q2_thread.html
+errlog_thread.html
+demo-tree.json
+node-osmo-tree.json
+devices_api.json
+ghcr_token.json
+manifest.json
+
+# ===== Python =====
+__pycache__/
+*.pyc
+
+# ===== IDE / 系统 =====
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store

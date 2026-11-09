@@ -1,0 +1,5 @@
+# DJI Action 4 拍录联动数据字段
+project.manifest = manifest.xml
+# 本工程 source + 共享协议/客户端代码 (Windows 分号分隔; Linux/macOS 请改为冒号)
+base.sourcePath = source;../shared/source
+base.resourcePath = resources
