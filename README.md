@@ -1,75 +1,83 @@
+**English** | [简体中文](README.zh-CN.md)
+
 # garmin-connect-dji
 
-**Garmin 手表遥控 DJI Action 运动相机** — 在 Garmin 手表上通过 BLE 直连 DJI Osmo Action 系列相机，实现运动开始自动开录、结束自动停录，全程只操作手表。
+**Control a DJI Osmo Action camera from your Garmin watch** — recording auto-starts when your workout begins and auto-stops when it ends. Everything happens on the watch: no phone, no camera buttons.
 
 > A Connect IQ data field that lets Garmin watches start/stop recording on DJI Osmo Action cameras over Bluetooth LE. Verified end-to-end on Forerunner 255 + Osmo Action 4.
 
-[详细设计文档（中文）](实现方案.md)
+Design notes (Chinese): [实现方案.md](实现方案.md)
 
 ---
 
-## 功能
+## Features
 
-- **自动联动**：进入运动（骑行/跑步等）后自动连接相机；计时开始→相机开录；计时结束→停录
-- **暂停不停止**：运动中途暂停（等红灯）不会打断录像，不产生碎片文件
-- **实时状态**：字段上显示连接状态、REC 红点、录制时长、相机电量、SD 卡剩余
-- **命令确认**：每条录像命令等待相机应答，失败自动重发，振动提示结果
-- **自动重连**：连接断开自动重扫重连；相机休眠时自动发"拍录键"唤醒并开录
+- **Auto-link**: connects to the camera when you enter a sport (cycling/running…); timer start → recording starts; timer stop → recording stops
+- **Pause-proof**: pausing the workout does NOT interrupt recording — no fragment files
+- **Live status**: REC dot, recording time, camera battery and free SD space on the field
+- **Acknowledged commands**: every record command waits for the camera's response, auto-retries, vibrates on result
+- **Auto-reconnect**: re-scans and reconnects after dropouts; wakes a sleeping camera with the "record key" event
 
-## 工作原理
+## How it works
 
 ```
-┌─────────────────────────── Garmin 手表 ───────────────────────────┐
-│  原生运动模式 (骑行/跑步…)                                          │
-│   └─ 数据字段 [DJI Cam Control]                                    │
-│        ├─ AppBase 壳: 管理连接生命周期 (onStart/onStop)             │
-│        ├─ 视图: 计时事件驱动录像命令 + 每秒绘制状态                  │
-│        └─ 心跳: 数据字段由 compute() 驱动, 应用由 Timer 驱动        │
+┌──────────────────────────── Garmin watch ─────────────────────────┐
+│  Native sport profile (cycling/running…)                           │
+│   └─ Data field [DJI Cam Control]                                  │
+│        ├─ AppBase shell: owns the connection lifecycle             │
+│        ├─ View: timer events drive record commands + 1 Hz drawing  │
+│        └─ Heartbeat: compute() on data fields, Timer in apps       │
 │                    │ BLE central (GATT client)                     │
 └────────────────────┼───────────────────────────────────────────────┘
-                     │ 写 FFF5 (命令) / 收 FFF4 (应答与状态)
+                     │ write FFF5 (commands) / receive FFF4 (acks, status)
 ┌────────────────────▼───────────── DJI Osmo Action 4 ──────────────┐
-│  GATT 服务 FFF0                                                    │
-│  DJI R SDK 协议 (0xAA 帧): 0019 握手 → 1D03 拍录控制 → 1D02 状态推送 │
+│  GATT service FFF0                                                 │
+│  DJI R SDK protocol (0xAA frames): 0019 handshake → 1D03 record    │
+│  control → 1D02 status push                                        │
 └────────────────────────────────────────────────────────────────────┘
 ```
 
-协议为 **DJI 官方 R SDK 蓝牙协议**（与 DJI 官方开源的
-[Osmo-GPS-Controller-Demo](https://github.com/dji-sdk/Osmo-GPS-Controller-Demo)
-遥控器同源），帧格式、CRC 参数与官方测试向量逐字节核对。
+The protocol is the **official DJI R SDK BLE protocol** — the same one used by DJI's
+open-source [Osmo-GPS-Controller-Demo](https://github.com/dji-sdk/Osmo-GPS-Controller-Demo)
+remote. Frame layout and CRC parameters are verified byte-for-byte against DJI's
+official test vectors.
 
-## 支持设备
+## Supported devices
 
-- **手表（已验证）**：Forerunner 255 标准版（固件 29.05 / CIQ 6.0.4）
-- **手表（理论兼容）**：2022 年后发布、支持 CIQ BLE central 的机型——Fenix 7/8、Epix 2、
-  Enduro 3、FR165/265/570/955/965/970、Venu 3/4、vivoactive 5、Instinct 3、MARQ 2、
-  Descent Mk3（manifest 已含 39 个机型，构建时逐一校验过）
-- **相机**：Osmo Action 4（0xFF33）；协议同源支持 Action 5 Pro (0xFF44) / Action 6 (0xFF55) /
-  Osmo 360 (0xFF66)
+- **Watch (verified)**: Forerunner 255 (fw 29.05 / CIQ 6.0.4)
+- **Watch (should work)**: 2022+ models with CIQ BLE central — Fenix 7/8, Epix 2,
+  Enduro 3, FR165/265/570/955/965/970, Venu 3/4, vivoactive 5, Instinct 3, MARQ 2,
+  Descent Mk3 (39 devices in the manifest, all build-verified)
+- **Camera**: Osmo Action 4 (0xFF33); the protocol also covers Action 5 Pro (0xFF44),
+  Action 6 (0xFF55) and Osmo 360 (0xFF66)
 
-判断你的手表是否支持：在 Connect IQ Store 打开官方
+To check your watch: open the official
 [GoPro Camera Control](https://apps.garmin.com/en-US/apps/b6474aef-4b36-46ea-b7e5-6e8612b50e9d)
-查看"兼容设备"列表。
+app page in the Connect IQ Store and look at "Compatible Devices".
 
-## 安装使用
+## Installation
 
-1. 从 [Releases](../../releases) 下载 `DJIFIELD.PRG`，复制到手表 U 盘 `GARMIN\APPS\`
-   （**文件名保持 8.3 格式**，拔线前安全弹出）；
-2. 长按 UP → 活动和应用 → 骑行 → 活动设置 → 数据页 → 添加字段 **DJI Cam Control**；
-3. 相机开机（无线连接开启、亮屏、手机 Mimo 未连接）；
-4. 启动骑行计时 → 相机自动开录；结束保存 → 自动停录；**暂停计时不会打断录像**。
+1. Download `DJIFIELD.PRG` from [Releases](../../releases) and copy it to the watch's
+   USB drive under `GARMIN\APPS\` (**keep the 8.3 filename**, eject safely);
+2. Long-press UP → Activities & Apps → Cycling → Activity Options → Data Screens →
+   add the **DJI Cam Control** field;
+3. Power on the camera (wireless connection ON, screen awake, phone Mimo disconnected);
+4. Start the workout timer → the camera starts recording; stop/save → recording stops.
+   **Pausing the timer does NOT stop recording.**
 
-字段页显示期间：REC 红点与录制时长实时显示；连接失败或命令异常有振动提示。
+The field page shows REC dot + recording time, camera battery and free SD space.
+Vibration patterns confirm command results.
 
-## 从源码构建
+## Building from source
 
-依赖：[Connect IQ SDK 9.3.0+](https://developer.garmin.com/connect-iq/sdk/)（含设备包）、
-JDK 11+、OpenSSL。仓库自带 `jdk/`（Windows 可选，脚本自动使用）。
+Requirements: [Connect IQ SDK 9.3.0+](https://developer.garmin.com/connect-iq/sdk/)
+(with device packs), JDK 11+, OpenSSL. A bundled `jdk/` is included for Windows
+(build scripts use it automatically).
 
 ```bat
 :: Windows
-build.bat              :: 默认 fr255, 产物在 bin\ 下
-build.bat fenix7       :: 指定其他机型
+build.bat              :: defaults to fr255, output in bin\
+build.bat fenix7       :: another device
 ```
 
 ```bash
@@ -77,74 +85,84 @@ build.bat fenix7       :: 指定其他机型
 ./build.sh
 ```
 
-原始命令：
+Raw command:
 
 ```bash
 sdk/bin/monkeyc -f datafield/monkey.jungle -d fr255 -y developer_key.der -w -o bin/DJIFIELD.PRG
 ```
 
-**开发者密钥必须是 RSA 4096 位**（生成与 DER 转换见下文踩坑清单）。
-编译产物通过 GitHub Releases 分发；`bin/` 已在 .gitignore 中。
+**The developer key must be RSA 4096-bit** (generation and DER conversion in the
+pitfalls list below). Build artifacts are distributed via GitHub Releases; `bin/`
+is gitignored.
 
-### 模拟器
+### Simulator
 
 ```bash
-sdk/bin/connectiq.bat                                  :: 启动模拟器
-sdk/bin/monkeydo bin/DJITEST.PRG fr255                 :: 加载测试 App
+sdk/bin/connectiq.bat                                  :: start the simulator
+sdk/bin/monkeydo bin/DJITEST.PRG fr255                 :: load the test app
 ```
 
-模拟器渲染文字需先在 SDK Manager 的 **Devices** 标签下载对应设备包（补齐字体文件）。
+Text rendering in the simulator requires downloading the device pack in SDK
+Manager (fonts).
 
-## FR255 踩坑清单（血泪经验，做 Garmin BLE 应用必读）
+## FR255 pitfalls (hard-won — read before any Garmin BLE project)
 
-本项目联调过程中定位了 **4 个 FR255 专属的坑**，每一个都会导致"静默失败"（不报错、不工作）：
+Four FR255-specific pitfalls were found while building this project. **Every one
+of them fails silently** (no error message, nothing works):
 
-| # | 坑 | 症状 | 规避 |
-|---|-----|------|------|
-| 1 | **PRG 文件名必须 8.3 格式**（主名 ≤8 字符） | 拷进 `GARMIN/APPS/` 的长文件名 PRG 重连后被**静默删除**，不装不报错 | 输出 `DJITEST.PRG` 这类短名 |
-| 2 | **开发者密钥必须 RSA 4096 位** | 2025 Q2 起固件对侧载应用做新签名校验，2048 位密钥签名=签名校验失败、静默拒收 | `openssl genrsa -out key.pem 4096` |
-| 3 | **`Timer.start()` 只有 3 个参数**且回调**无参** | 4 参调用抛 `Too Many Arguments Error`；若标志位先置位，定时器静默失效+未保护路径崩溃 | `start(method, ms, true)`；`onTick()` 不带参 |
-| 4 | **数据字段入口必须是 AppBase 壳** | 把 DataField 类直接当 entry → `Failed to start CIQ Application / Unexpected Type Error`（空堆栈） | AppBase 壳 + `getInitialView()` 返回字段视图；`compute()` 代替 Timer 驱动心跳 |
+| # | Pitfall | Symptom | Fix |
+|---|---------|---------|-----|
+| 1 | **PRG filename must be 8.3** (base name ≤ 8 chars) | Long-named PRGs copied to `GARMIN/APPS/` are **silently deleted** on reconnect — not installed, no error | Output short names like `DJITEST.PRG` |
+| 2 | **Developer key must be RSA 4096-bit** | Since 2025-Q2 firmware, sideloaded apps signed with 2048-bit keys fail the new signature check — silently rejected | `openssl genrsa -out key.pem 4096` |
+| 3 | **`Timer.start()` takes only 3 arguments** and the callback is **parameter-less** | A 4-arg call throws `Too Many Arguments Error`; if the flag is set before the call, the timer silently dies + unguarded paths crash | `start(method, ms, true)`; `onTick()` without params |
+| 4 | **A data field's entry class must be an AppBase shell** | Using the DataField class directly as the entry → `Failed to start CIQ Application / Unexpected Type Error` (empty stack) | AppBase shell + `getInitialView()` returns the field view; use `compute()` instead of Timer for the heartbeat |
 
-**崩溃日志是联调第一手证据**：手表 USB 的 `CIQ_LOG.YML`（YAML 格式，含符号化堆栈），
-用 `tools/symbolicate.py` 翻译 pc 地址。本项目的崩溃就是靠它最终定位的（前三轮盲试走了弯路）。
+**Crash logs are the first piece of debugging evidence**: `CIQ_LOG.YML` on the
+watch's USB drive (YAML with a symbolicated stack), translated to source locations
+with `tools/symbolicate.py`. This project's crash was only located with it (the
+first three rounds of blind fixes went the wrong way).
 
-另外两个设备库层面的差异：数据字段**无 `Toybox.Timer` 权限**（改用 `compute()` 驱动心跳）；
-模拟器的 fr255 字体资源依赖设备包（社区提取的设备包缺字体，模拟器渲染会崩，真机不受影响）。
+Two more device-db quirks: data fields **have no `Toybox.Timer` permission** (the
+heartbeat is driven by `compute()`); the simulator's fr255 font resources come
+with the device pack (community-extracted packs lack fonts — the simulator
+crashes on any text rendering, the real watch is unaffected).
 
-## 已知限制
+## Known limitations
 
-- 需要相机在配对时于相机屏幕上确认一次（官方握手协议要求）；之后自动静默重连
-- 相机休眠超过 30 分钟后无法 BLE 唤醒（官方限制），建议运动前手动开机并关闭自动关机
-- 未实现 GPS 推送（0017）：录像文件不含 GPS 仪表盘数据（协议已具备，欢迎 PR）
-- 多台相机同场时连接扫描到的第一台
+- The camera must be confirmed once on its own screen during pairing (official
+  handshake); afterwards it reconnects silently
+- A camera asleep for >30 minutes cannot be woken via BLE (official limitation);
+  power it on manually before the workout
+- GPS dashboard push (0017) not implemented: recordings carry no GPS dashboard
+  data (the protocol is ready — PRs welcome)
+- With multiple cameras in range, connects to the first one found
 
-## 仓库结构
+## Repository layout
 
 ```
-datafield/   正式数据字段工程 (App 壳 + 视图)
-testapp/     调试 App 工程 (手动控制, 验证链路用)
-shared/      协议编解码 (DjiProtocol) + 相机客户端 (CameraClient)
-tools/       图标生成 / 崩溃日志符号化 / CRC 测试脚本与官方测试向量
-build.bat    Windows 一键编译
-build.sh     Linux/macOS/Git Bash 一键编译
-实现方案.md   详细设计文档 (中文)
+datafield/   Production data field (App shell + view)
+testapp/     Debug app (manual control, link verification)
+shared/      Protocol codec (DjiProtocol) + camera client (CameraClient)
+tools/       Icon generator / crash-log symbolication / CRC tests + vectors
+build.bat    Windows one-shot build
+build.sh     Linux/macOS/Git Bash one-shot build
+实现方案.md   Design notes (Chinese)
 ```
 
-## 致谢与参考
+## Credits & references
 
 - [DJI Osmo-GPS-Controller-Demo](https://github.com/dji-sdk/Osmo-GPS-Controller-Demo) —
-  DJI 官方开源遥控器 Demo，本项目的协议权威来源（MIT）
+  DJI's official open-source remote demo, the authoritative protocol source (MIT)
 - [datagutt/node-osmo](https://github.com/datagutt/node-osmo) —
-  Osmo 系列 BLE 控制库，交叉验证
+  Osmo-series BLE control library, cross-validation
 - [yigitkonur/lib-osmo-ble](https://github.com/yigitkonur/lib-osmo-ble) —
-  DUML-over-BLE 协议文档
+  DUML-over-BLE protocol documentation
 - Garmin
   [FieldTimerEvents](https://developer.garmin.com/connect-iq/sample-code/) /
-  [NordicThingy52](https://developer.garmin.com/connect-iq/sample-code/) 示例 —
-  数据字段结构与 BLE central 写法
+  [NordicThingy52](https://developer.garmin.com/connect-iq/sample-code/) samples —
+  data field structure and BLE central patterns
 - [GoPro Camera Control](https://apps.garmin.com/en-US/apps/b6474aef-4b36-46ea-b7e5-6e8612b50e9d) —
-  Garmin 官方 GoPro 遥控（手表-BLE-运动相机通路的先例）
+  Garmin's official GoPro remote (precedent for watch→BLE→action camera)
 
 ## License
 
