@@ -1,3 +1,5 @@
+**简体中文** | [English](DESIGN.md)
+
 # Garmin 手表联动控制 DJI Osmo Action 4 录像 — 详细实现方案
 
 > 目标：手表上开始运动 → Action 4 自动开始录像；手表上结束运动 → Action 4 自动停止录像。
@@ -13,7 +15,7 @@
 
 ## 1. 结论与推荐路线
 
-**可行，推荐"手表直连相机"方案：在手表上开发一个 Connect IQ（CIQ）数据字段（Data Field），通过 BLE（central 角色）直连 Action 4，发送逆向出来的 DJI DUML 协议命令来开始/停止录像。不需要手机参与，不需要改装相机。**
+**可行，推荐"手表直连相机"方案：在手表上开发一个 Connect IQ（CIQ）数据字段（Data Field），通过 BLE（central 角色）直连 Action 4，发送 DJI 官方 R SDK 协议命令来开始/停止录像。不需要手机参与，不需要改装相机。**
 
 这条路线的三个可行性支柱（均已验证存在）：
 
@@ -92,7 +94,7 @@ Mimo 逆向 DUML(0x55) 协议（lib-osmo-ble，仅 Pocket 3 逐字节验证）�
 - **CRC16: init `0x3AA3`，poly `0xA001`(反射)，无终值异或**
 - **CRC32: init `0x3AA3`，poly `0xEDB88320`(反射)，无终值异或**
 - 两个 CRC 参数已用官方 `connect_cmd_frame.txt` 全部 10 个测试帧 + 文档示例帧验证通过
-  （验证脚本 `refs/validate_crc.py`）
+  （验证脚本 `tools/validate_crc.py`）
 
 **关键命令**：
 
@@ -217,7 +219,7 @@ class DJIControlField extends WatchUi.DataField {
 | 阶段 | 内容 | 产出 | 预估 |
 |------|------|------|------|
 | M0 | 环境与可行性自查：确认手表在 GoPro 官方 App 兼容列表；装 CIQ SDK；跑通"Hello Data Field"侧载 | 手表上能显示自制数据字段 | 0.5 天 |
-| M1 | ~~协议实测~~ **已完成**：协议改用 DJI 官方 R SDK 协议，命令字节全部来自官方文档，CRC 已用官方 11 个测试帧验证（`refs/validate_crc.py`） | `refs/demo/` + 实现代码 | 0（已完成） |
+| M1 | ~~协议实测~~ **已完成**：协议改用 DJI 官方 R SDK 协议，命令字节全部来自官方文档，CRC 已用官方 11 个测试帧验证（`tools/validate_crc.py`） | `refs/demo/` + 实现代码 | 0（已完成） |
 | M2 | 手表端 BLE：profile 注册、扫描/配对/绑定重连、fff5 写入 / fff4 订阅 | **已实现**（`CameraClient.mc`），待真机验证 | 已编码 |
 | M3 | 协议编解码 + 录像命令 + 超时重发 + 状态推送解析 | **已实现**（`DjiProtocol.mc`），待真机验证 | 已编码 |
 | M4 | 数据字段集成：onTimerStart/onTimerStop 触发、状态 UI、振动提示、暂停策略、异常路径（相机关机/断连/没电） | 完整体验，运动全程无感联动 | 1~2 天 |

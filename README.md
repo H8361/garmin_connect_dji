@@ -6,7 +6,7 @@
 
 > A Connect IQ data field that lets Garmin watches start/stop recording on DJI Osmo Action cameras over Bluetooth LE. Verified end-to-end on Forerunner 255 + Osmo Action 4.
 
-Design notes (Chinese): [实现方案.md](实现方案.md)
+Design notes: **[English](DESIGN.md)** | [简体中文](DESIGN.zh-CN.md)
 
 ---
 
@@ -146,7 +146,7 @@ shared/      Protocol codec (DjiProtocol) + camera client (CameraClient)
 tools/       Icon generator / crash-log symbolication / CRC tests + vectors
 build.bat    Windows one-shot build
 build.sh     Linux/macOS/Git Bash one-shot build
-实现方案.md   Design notes (Chinese)
+DESIGN.md    Design notes (EN) / DESIGN.zh-CN.md (中文)
 ```
 
 ## Credits & references
